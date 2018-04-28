@@ -8,6 +8,14 @@ import config as c
 import log as Log
 import requests
 
+#result{} is the dict for {key,COIN} while key is like 'dgb_qubit'
+results = {}
+
+#revs is the dict for {key,rev} e.g. {'dgb_qubit',2.3}
+revs={}
+
+#running is the on-off switch
+running=True
 
 class Coin():
     x10rev=0
@@ -32,7 +40,7 @@ coin_json={
 #signal.SIGINT=Ctrl-C
 def signal_handler(signal, frame):
 
-    log.info('exit')
+    log.info('exiting...')
     # if pool:
     #     pool.shutdown(0)
     #     pool.close()
@@ -40,7 +48,8 @@ def signal_handler(signal, frame):
     #     proxies.del_proxy(c)
     # time.sleep(1)
     # sys.exit(0)
-    running=False
+    global running
+    running =False
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -115,7 +124,7 @@ def parse_args():
 
 
 def get_results():
-    results={}
+    global results
     for key in coin_json:
         #print(key,':',coin_json[key])
         d = requests.get(coin_json[key]).json()
@@ -133,15 +142,15 @@ def get_results():
         cal = 10000000000 #10g
         if 'skein' in key:
             cal= 5000000000 #5g
-        c.x10rev = dailycoins / c.nethash * c.price * cal
-
-
-
+        #we calculate in mBTC, so x1000
+        c.x10rev = dailycoins / c.nethash * c.price * cal * 1000
         results[key]=c
-    return results
+        revs[key] = c.x10rev
+    pass
+   # return results
 
 args = parse_args()
-shutdown = False
+
 signal.signal(signal.SIGINT, signal_handler)
 
 # Set log stuff
@@ -153,17 +162,38 @@ log = Log.Log('main')
 print('working....')
 #c.loadConfig('x10')
 
+current_rev=0
+current_algo=''
+start_time=time.time()
 
 
-while(True):
-    results = get_results()
+while(running):
+    
     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    for (k,c) in results.items():
-#        print("Coin:" , k, "  Nethash(G):",round(c.nethash / 1000000000 , 0) ," x10 rev:",round(c.x10rev,8) )
-        print('Coin: %s Hash(G): %.0f Rev(mSat): %.3f' %(k,c.nethash / 1000000000,c.x10rev *1000))
+    get_results()
+    rev=0
+    algo=''
+
+    for k in coin_json.keys():
+        c = results[k]
+        #rev = revs[k]
+        print('Coin: %s Hash(G): %.0f Rev(mSat): %.3f' %(k,c.nethash / 1000000000,c.x10rev))
+    
+    # print(revs)
+
+    r = sorted(revs.items(),key = lambda x:x[1],reverse = True)
+    print(r)
+
+    time_elapsed = time.time()-start_time
+    if r[0][1] > r[1][1] * 1.05 and r[0][0] != current_algo:
+        current_algo = r[0][0]
+        print('Changing algo to ',current_algo , ' prev elapsed:',time_elapsed)
+        start_time = time.time()
+    else:
+        print('Current algo %s has run for %d secs' %(current_algo, time_elapsed))
 
     print('')
     time.sleep(10)
 
-
+log.info('Closed')
 

@@ -1,5 +1,5 @@
 import time
-filename = ' '
+filename = ''
 stdout = True
 verbose = 3
 
