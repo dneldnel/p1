@@ -3,7 +3,7 @@ import json
 import signal
 import sys
 import time
-
+import os
 import config as c
 import log as Log
 import requests
@@ -14,8 +14,11 @@ results = {}
 #revs is the dict for {key,rev} e.g. {'dgb_qubit',2.3}
 revs={}
 
-#running is the on-off switch
+#running is the on-off switch   
 running=True
+
+#The haproxy path to config
+config_path='/etc/haproxy/'
 
 class Coin():
     x10rev=0
@@ -189,6 +192,12 @@ while(running):
         current_algo = r[0][0]
         print('Changing algo to ',current_algo , ' prev elapsed:',time_elapsed)
         start_time = time.time()
+        file = config_path + current_algo + '.cfg'
+        if os.path.exists(file):
+            print('using file ' +file)
+        else:
+            print('error: can not find '+file)
+            running = False
     else:
         print('Current algo %s has run for %d secs' %(current_algo, time_elapsed))
 
