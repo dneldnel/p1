@@ -6,7 +6,7 @@ import time
 import os
 import config as c
 import log as Log
-import commands
+import subprocess
 import requests
 
 #result{} is the dict for {key,COIN} while key is like 'dgb_qubit'
@@ -196,9 +196,9 @@ while(running):
         file = config_path + current_algo + '.cfg'
         if os.path.exists(file):
             print('using file ' +file)
-            status, output = commands.getstatusoutput('cp '+file + ' /etc/haproxy/haproxy.cfg')
+            status, output = subprocess.getstatusoutput('cp '+file + ' /etc/haproxy/haproxy.cfg')
             if status ==0:
-                status, output = commands.getstatusoutput('service haproxy restart')
+                status, output = subprocess.getstatusoutput('service haproxy restart')
                 if status != 0:
                     print('error happens: '+output)
                     running = False
