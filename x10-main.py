@@ -175,6 +175,8 @@ while(running):
     
     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     get_results()
+    
+
     rev=0
     algo=''
 
@@ -183,13 +185,15 @@ while(running):
         #rev = revs[k]
         print('Coin: %s Hash(G): %.0f Rev(mSat): %.3f' %(k,c.nethash / 1000000000,c.x10rev))
     
-    # print(revs)
-
     r = sorted(revs.items(),key = lambda x:x[1],reverse = True)
-    print(r)
+
 
     time_elapsed = time.time()-start_time
     if r[0][1] > r[1][1] * 1.05 and r[0][0] != current_algo:
+        #save json file first
+        with open('revs.json','w',encoding='utf-8') as f:
+            f.write(json.dumps(revs))
+
         current_algo = r[0][0]
         print('Changing algo to ',current_algo , ' prev elapsed:',time_elapsed)
         start_time = time.time()
