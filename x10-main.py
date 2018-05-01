@@ -172,10 +172,13 @@ start_time=time.time()
 
 
 while(running):
-    
+
     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     get_results()
-    
+
+    #save json file first
+    with open('revs.json','w',encoding='utf-8') as f:
+        f.write(json.dumps(revs))
 
     rev=0
     algo=''
@@ -190,9 +193,7 @@ while(running):
 
     time_elapsed = time.time()-start_time
     if r[0][1] > r[1][1] * 1.05 and r[0][0] != current_algo:
-        #save json file first
-        with open('revs.json','w',encoding='utf-8') as f:
-            f.write(json.dumps(revs))
+
 
         current_algo = r[0][0]
         print('Changing algo to ',current_algo , ' prev elapsed:',time_elapsed)
