@@ -130,26 +130,29 @@ def parse_args():
 def get_results():
     global results
     for key in coin_json:
-        #print(key,':',coin_json[key])
-        d = requests.get(coin_json[key]).json()
-        c=Coin(
-            d['tag'],
-            d['algorithm'],
-            d['nethash'],
-            d['block_reward24'],
-            d['exchange_rate'],
-            d['block_time']
-        )
-        #print(d)
-        dailycoins = 60*60*24 * c.blockreward / float(c.blocktime)
+        try:
+            #print(key,':',coin_json[key])
+            d = requests.get(coin_json[key]).json()
+            c=Coin(
+                d['tag'],
+                d['algorithm'],
+                d['nethash'],
+                d['block_reward24'],
+                d['exchange_rate'],
+                d['block_time']
+            )
+            #print(d)
+            dailycoins = 60*60*24 * c.blockreward / float(c.blocktime)
 
-        cal = 10000000000 #10g
-        if 'skein' in key:
-            cal= 5000000000 #5g
-        #we calculate in mBTC, so x1000
-        c.x10rev = dailycoins / c.nethash * c.price * cal * 1000
-        results[key]=c
-        revs[key] = c.x10rev
+            cal = 10000000000 #10g
+            if 'skein' in key:
+                cal= 5000000000 #5g
+            #we calculate in mBTC, so x1000
+            c.x10rev = dailycoins / c.nethash * c.price * cal * 1000
+            results[key]=c
+            revs[key] = c.x10rev
+        except:
+            pass
     pass
    # return results
 
